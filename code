@@ -1,0 +1,85 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'ENV',
+            choices: ['dev', 'prod'],
+            description: 'Select the environment to deploy'
+        )
+        choice(
+            name: 'ACTION',
+            choices: ['plan', 'apply'],
+            description: 'Terraform action to run'
+        )
+    }
+
+    environment {
+        AWS_REGION = "ap-south-1"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', credentialsId: 'git-creds', url: 'https://github.com/ValipiReddy-web/test-sample.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    dir("environments/${params.ENV}") {
+                        sh "terraform init -input=false"
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Fmt & Validate') {
+            steps {
+                dir("environments/${params.ENV}") {
+                    sh "terraform fmt -recursive"
+                    sh "terraform validate"
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            when { expression { return params.ACTION == "plan" } }
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    dir("environments/${params.ENV}") {
+                        // auto.tfvars is picked automatically, no need for -var-file
+                        sh "terraform plan -input=false -out=tfplan"
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            when { expression { return params.ACTION == "apply" } }
+            steps {
+                withCredentials([
+                    string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                    string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                ]) {
+                    dir("environments/${params.ENV}") {
+                        sh "terraform apply -input=false -auto-approve"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: "environments/${params.ENV}/terraform.tfstate", allowEmptyArchive: true
+        }
+    }
+}
