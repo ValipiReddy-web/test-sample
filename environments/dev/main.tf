@@ -21,7 +21,7 @@ provider "aws" {
 
 # Security group for EC2
 module "sg" {
-  source      = "../../modules/security-group"
+  source      = "../../modules/security-grp"
   name        = "dev-ec2-sg"
   vpc_id      = var.vpc_id
   ingress_rules = [
