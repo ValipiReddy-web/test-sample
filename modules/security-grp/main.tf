@@ -30,4 +30,3 @@ resource "aws_security_group" "this" {
     var.tags
   )
 }
-
