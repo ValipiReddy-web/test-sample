@@ -37,3 +37,4 @@ module "ec2" {
   key_name          = var.key_name
   security_group_ids = [data.aws_security_group.shared_sg.id]
 }
+
