@@ -19,19 +19,18 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# Fetch the shared security group (created once for dev/prod)
+# Reference shared security group
 data "aws_security_group" "shared_sg" {
   filter {
     name   = "group-name"
-    values = ["dev-ec2-sg"]
+    values = ["shared-ec2-sg"]   # Name of your shared SG
   }
   vpc_id = var.vpc_id
 }
 
-# EC2 instance with the shared security group attached
 module "ec2" {
   source            = "../../modules/ec2"
-  name              = "dev-ec2"
+  name              = "${var.env}-ec2"
   ami               = var.ami
   subnet_id         = var.subnet_id
   instance_type     = var.instance_type
