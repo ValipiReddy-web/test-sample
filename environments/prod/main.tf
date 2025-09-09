@@ -43,7 +43,7 @@ module "sg" {
 # EC2 instance with SG attached
 module "ec2" {
   source            = "../../modules/ec2"
-  name              = "dev-ec2"
+  name              = "prod-ec2"
   ami               = var.ami
   instance_type     = "t2.micro"
   subnet_id         = var.subnet_id
