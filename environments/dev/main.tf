@@ -19,15 +19,37 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# Reference shared security group
-data "aws_security_group" "shared_sg" {
-  filter {
-    name   = "group-name"
-    values = ["shared-ec2-sg"]   # Name of your shared SG
-  }
-  vpc_id = var.vpc_id
+# Create shared security group using module
+module "sg" {
+  source      = "../../modules/security-grp"
+  name        = "shared-ec2-sg"
+  description = "Shared SG for dev and prod"
+  vpc_id      = var.vpc_id
+  ingress_rules = [
+    {
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    },
+    {
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
+  egress_rules = [
+    {
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
+  ]
 }
 
+# EC2 instance using shared security group
 module "ec2" {
   source            = "../../modules/ec2"
   name              = "${var.env}-ec2"
@@ -35,6 +57,5 @@ module "ec2" {
   subnet_id         = var.subnet_id
   instance_type     = var.instance_type
   key_name          = var.key_name
-  security_group_ids = [data.aws_security_group.shared_sg.id]
+  security_group_ids = [module.sg.security_group_id]
 }
-
