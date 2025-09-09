@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-bucket-2025sep"
-    key    = "terraform/dev.tfstate"
+    key    = "terraform/prod.tfstate"
     region = "ap-south-1"
   }
 }
