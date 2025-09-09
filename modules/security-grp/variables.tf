@@ -1,18 +1,22 @@
 variable "name" {
-  type = string
+  description = "Name of the security group"
+  type        = string
 }
 
 variable "description" {
-  type    = string
-  default = "Security Group managed by Terraform"
+  description = "Description of the security group"
+  type        = string
+  default     = "Managed by Terraform"
 }
 
 variable "vpc_id" {
-  type = string
+  description = "VPC ID where the security group will be created"
+  type        = string
 }
 
 variable "ingress_rules" {
-  type = list(object({
+  description = "List of ingress rules"
+  type        = list(object({
     from_port   = number
     to_port     = number
     protocol    = string
@@ -22,7 +26,8 @@ variable "ingress_rules" {
 }
 
 variable "egress_rules" {
-  type = list(object({
+  description = "List of egress rules"
+  type        = list(object({
     from_port   = number
     to_port     = number
     protocol    = string
@@ -39,7 +44,7 @@ variable "egress_rules" {
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Optional tags"
+  type        = map(string)
+  default     = {}
 }
-
