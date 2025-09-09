@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-bucket-2025sep"
-    key    = "terraform/dev.tfstate"
+    key    = "terraform/dev.tfstate"  # Unique for dev
     region = "ap-south-1"
   }
 }
@@ -19,11 +19,12 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# Create shared security group using module
+# -----------------------------
+# Security Group Module
+# -----------------------------
 module "sg" {
   source      = "../../modules/security-grp"
   name        = "shared-ec2-sg"
-  description = "Shared SG for dev and prod"
   vpc_id      = var.vpc_id
   ingress_rules = [
     {
@@ -39,6 +40,7 @@ module "sg" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   ]
+
   egress_rules = [
     {
       from_port   = 0
@@ -49,13 +51,15 @@ module "sg" {
   ]
 }
 
-# EC2 instance using shared security group
+# -----------------------------
+# EC2 Module
+# -----------------------------
 module "ec2" {
   source            = "../../modules/ec2"
-  name              = "${var.env}-ec2"
+  name              = "dev-ec2"
   ami               = var.ami
-  subnet_id         = var.subnet_id
   instance_type     = var.instance_type
+  subnet_id         = var.subnet_id
   key_name          = var.key_name
   security_group_ids = [module.sg.security_group_id]
 }
