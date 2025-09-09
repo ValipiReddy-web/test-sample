@@ -22,7 +22,7 @@ provider "aws" {
 # Fetch the shared security group (created once for dev/prod)
 data "aws_security_group" "shared_sg" {
   filter {
-    name   = "dev-ec2-sg"
+    name   = "group-name"
     values = ["dev-ec2-sg"]
   }
   vpc_id = var.vpc_id
