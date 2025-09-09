@@ -6,3 +6,4 @@ instance_type     = "t2.micro"
 subnet_id         = "subnet-0ebd638ac5a7cee3d"
 key_name          = "aug2025key"
 availability_zones = ["ap-south-1a"]
+env = "dev"
