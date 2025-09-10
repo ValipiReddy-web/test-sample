@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-bucket-2025sep"
-    key    = "terraform/dev.tfstate"  # Unique for dev
+    key    = "workspace-demo/${terraform.workspace}/terraform.tfstate"  # Unique for dev
     region = "ap-south-1"
   }
 }
