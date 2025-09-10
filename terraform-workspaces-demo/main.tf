@@ -23,7 +23,7 @@ provider "aws" {
 # Security Group Module
 # -----------------------------
 module "sg" {
-  source      = "../../modules/security-grp"
+  source      = "./modules/security-grp"
   name        = "shared-ec2-sg"
   vpc_id      = var.vpc_id
   ingress_rules = [
@@ -55,7 +55,7 @@ module "sg" {
 # EC2 Module
 # -----------------------------
 module "ec2" {
-  source            = "../../modules/ec2"
+  source            = "./modules/ec2"
   name              = "dev-ec2"
   ami               = var.ami
   instance_type     = var.instance_type
