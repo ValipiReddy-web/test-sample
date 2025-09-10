@@ -20,35 +20,14 @@ provider "aws" {
 }
 
 # -----------------------------
-# Security Group Module (Shared)
+# Reference Existing Shared Security Group
 # -----------------------------
-module "sg" {
-  source      = "../../modules/security-grp"
-  name        = "shared-ec2-sg"  # Same SG as Dev
-  vpc_id      = var.vpc_id
-  ingress_rules = [
-    {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    },
-    {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  ]
-
-  egress_rules = [
-    {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  ]
+data "aws_security_group" "shared_sg" {
+  filter {
+    name   = "group-name"
+    values = ["shared-ec2-sg"]   # Must match the SG name created in Dev
+  }
+  vpc_id = var.vpc_id
 }
 
 # -----------------------------
@@ -61,6 +40,5 @@ module "ec2" {
   instance_type     = var.instance_type
   subnet_id         = var.subnet_id
   key_name          = var.key_name
-  security_group_ids = [module.sg.security_group_id]
+  security_group_ids = [data.aws_security_group.shared_sg.id]
 }
-
