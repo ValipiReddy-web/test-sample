@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-bucket-2025sep"
-    key    = "workspace-demo/${terraform.workspace}/${terraform.workspace}"  # Unique for dev
+    key    = "workspace-demo/${terraform.workspace}/terraform.tfstate"  # Dynamic per workspace
     region = "ap-south-1"
   }
 }
@@ -26,6 +26,7 @@ module "sg" {
   source      = "./modules/security-grp"
   name        = "shared-ec2-sg"
   vpc_id      = var.vpc_id
+
   ingress_rules = [
     {
       from_port   = 22
@@ -56,7 +57,7 @@ module "sg" {
 # -----------------------------
 module "ec2" {
   source            = "./modules/ec2"
-  name              = "dev-ec2"
+  name              = "${terraform.workspace}-ec2"  # Name includes workspace
   ami               = var.ami
   instance_type     = var.instance_type
   subnet_id         = var.subnet_id
