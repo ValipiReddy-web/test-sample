@@ -32,6 +32,3 @@ resource "aws_security_group_rule" "egress" {
   security_group_id = data.aws_security_group.existing_sg.id
 }
 
-output "security_group_id" {
-  value = data.aws_security_group.existing_sg.id
-}
