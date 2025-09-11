@@ -1,32 +1,37 @@
-resource "aws_security_group" "this" {
-  name        = var.name
-  description = var.description
-  vpc_id      = var.vpc_id
-
-  dynamic "ingress" {
-    for_each = var.ingress_rules
-    content {
-      from_port   = ingress.value.from_port
-      to_port     = ingress.value.to_port
-      protocol    = ingress.value.protocol
-      cidr_blocks = ingress.value.cidr_blocks
-    }
+# Lookup existing SG by name and VPC
+data "aws_security_group" "existing_sg" {
+  filter {
+    name   = "group-name"
+    values = [var.name]
   }
 
-  dynamic "egress" {
-    for_each = var.egress_rules
-    content {
-      from_port   = egress.value.from_port
-      to_port     = egress.value.to_port
-      protocol    = egress.value.protocol
-      cidr_blocks = egress.value.cidr_blocks
-    }
+  filter {
+    name   = "vpc-id"
+    values = [var.vpc_id]
   }
+}
 
-  tags = merge(
-    {
-      Name = var.name
-    },
-    var.tags
-  )
+# Use the existing SG ID for rules
+resource "aws_security_group_rule" "ingress" {
+  for_each          = var.ingress_rules
+  type              = "ingress"
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  protocol          = each.value.protocol
+  cidr_blocks       = each.value.cidr_blocks
+  security_group_id = data.aws_security_group.existing_sg.id
+}
+
+resource "aws_security_group_rule" "egress" {
+  for_each          = var.egress_rules
+  type              = "egress"
+  from_port         = each.value.from_port
+  to_port           = each.value.to_port
+  protocol          = each.value.protocol
+  cidr_blocks       = each.value.cidr_blocks
+  security_group_id = data.aws_security_group.existing_sg.id
+}
+
+output "security_group_id" {
+  value = data.aws_security_group.existing_sg.id
 }
