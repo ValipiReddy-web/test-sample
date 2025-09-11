@@ -10,7 +10,7 @@ terraform {
 
   backend "s3" {
     bucket = "terraform-bucket-2025sep"
-    key    = "workspace-demo/${terraform.workspace}/terraform.tfstate"  # Dynamic per workspace
+    key    = "workspace-demo/${terraform.workspace}/terraform.tfstate"
     region = "ap-south-1"
   }
 }
@@ -20,47 +20,18 @@ provider "aws" {
 }
 
 # -----------------------------
-# Security Group Module
+# IAM User Module
 # -----------------------------
-module "sg" {
-  source      = "./modules/security-grp"
-  name        = "shared-ec2-sg"
-  vpc_id      = var.vpc_id
-
-  ingress_rules = [
-    {
-      from_port   = 22
-      to_port     = 22
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    },
-    {
-      from_port   = 80
-      to_port     = 80
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  ]
-
-  egress_rules = [
-    {
-      from_port   = 0
-      to_port     = 0
-      protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  ]
+module "iam_user" {
+  source    = "./modules/iam"
+  user_name = var.user_name
 }
 
 # -----------------------------
-# EC2 Module
+# S3 Bucket Module
 # -----------------------------
-module "ec2" {
-  source            = "./modules/ec2"
-  name              = "${terraform.workspace}-ec2"  # Name includes workspace
-  ami               = var.ami
-  instance_type     = var.instance_type
-  subnet_id         = var.subnet_id
-  key_name          = var.key_name
-  security_group_ids = [module.sg.security_group_id]
+module "s3_bucket" {
+  source = "./modules/s3"
+  name   = "${var.s3_bucket_name}-${terraform.workspace}"
 }
+
